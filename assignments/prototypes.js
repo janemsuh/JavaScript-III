@@ -39,7 +39,10 @@ function CharacterStats(charAttrs) {
 CharacterStats.prototype = Object.create(GameObject.prototype);
 
 CharacterStats.prototype.takeDamage = function() {
-  return `${this.name} took damage.`;
+  if (this.healthPoints <= 0) {
+    return this.destroy();
+  }
+  return `${this.name} took damage and has ${this.healthPoints} hp remaining.`;
 };
 
 /*
@@ -62,6 +65,34 @@ Humanoid.prototype = Object.create(CharacterStats.prototype);
 
 Humanoid.prototype.greet = function() {
   return `${this.name} offers a greeting in ${this.language}.`;
+};
+
+function Villain(villainAttrs) {
+  Humanoid.call(this, villainAttrs);
+  this.vehicle = villainAttrs.vehicle;
+}
+
+Villain.prototype = Object.create(Humanoid.prototype);
+
+Villain.prototype.punch = function() {
+  this.healthPoints += 2;
+  hero.healthPoints -= 3;
+  console.log(`${this.name} punched ${hero.name} and now has ${this.healthPoints} hp!`);
+  return hero.takeDamage();
+};
+
+function Hero(heroAttrs) {
+  Humanoid.call(this, heroAttrs);
+  this.food = heroAttrs.food;
+}
+
+Hero.prototype = Object.create(Humanoid.prototype);
+
+Hero.prototype.slash = function() {
+  this.healthPoints += 5;
+  villain.healthPoints -= 5;
+  console.log(`${this.name} slashed ${villain.name} and now has ${this.healthPoints} hp!`);
+  return villain.takeDamage();
 };
  
 /*
@@ -123,6 +154,36 @@ Humanoid.prototype.greet = function() {
     language: 'Elvish',
   });
 
+  const hero = new Hero({
+    createdAt: new Date(),
+    dimensions: {
+      length: 2,
+      width: 3,
+      height: 5,
+    },
+    healthPoints: 15,
+    name: 'Al',
+    team: 'CAPS',
+    weapon: 'Sword',
+    language: 'Common Tongue',
+    food: 'cookies',
+  });
+
+  const villain = new Villain({
+    createdAt: new Date(),
+    dimensions: {
+      length: 1,
+      width: 2,
+      height: 5,
+    },
+    healthPoints: 10,
+    name: 'Kate',
+    team: 'Strategy',
+    weapon: 'Hammer',
+    language: 'Rant',
+    vehicle: 'pickup',
+  });
+
   console.log(mage.createdAt); // Today's date
   console.log(archer.dimensions); // { length: 1, width: 2, height: 4 }
   console.log(swordsman.healthPoints); // 15
@@ -133,9 +194,16 @@ Humanoid.prototype.greet = function() {
   console.log(archer.greet()); // Lilith offers a greeting in Elvish.
   console.log(mage.takeDamage()); // Bruce took damage.
   console.log(swordsman.destroy()); // Sir Mustachio was removed from the game.
+  console.log(villain.punch()); // Kate punched Al and now has 12 hp! Al took damage and has 12 hp remaining.
+  console.log(hero.slash()); // Al slashed Kate and now has 17 hp! Kate took damage and has 7 hp remaining. 
+  console.log(hero.slash()); // Al slashed Kate and now has 22 hp! Kate took damage and has 2 hp remaining.
+  console.log(villain.punch()); // Kate punched Al and now has 4 hp! Al took damage and has 19 hp remaining.
+  console.log(hero.slash()); // Al slashed Kate and now has 24 hp! Kate was removed from the game.
+ 
 
 
   // Stretch task: 
   // * Create Villain and Hero constructor functions that inherit from the Humanoid constructor function.  
   // * Give the Hero and Villains different methods that could be used to remove health points from objects which could result in destruction if health gets to 0 or drops below 0;
   // * Create two new objects, one a villain and one a hero and fight it out with methods!
+  
